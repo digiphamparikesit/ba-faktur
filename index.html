@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f4f6f9; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .card-header { background-color: #0d6efd; color: white; border-radius: 12px 12px 0 0 !important; font-weight: bold; }
+    .btn-primary { background-color: #0d6efd; border: none; }
+    .table th { background-color: #eef2f7; }
+  </style>
+</head>
+<body>
+
+<div class="container max-width-lg">
+  <div class="card">
+    <div class="card-header text-center">
+      <h4 class="mb-0">Form Input Faktur Pembelian Obat & BMHP</h4>
+    </div>
+    <div class="card-body">
+      <form id="fakturForm">
+        
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <label class="form-label font-weight-bold">Tanggal Faktur</label>
+            <input type="date" id="tanggal" class="form-control" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">No. Faktur</label>
+            <input type="text" id="noFaktur" class="form-control" placeholder="Contoh: FKT-2025-001" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Nama Supplier</label>
+            <input type="text" id="supplier" class="form-control" placeholder="PT. Kimia Farma" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Kategori</label>
+            <select id="kategori" class="form-select" required>
+              <option value="OBAT">OBAT</option>
+              <option value="BMHP">BMHP</option>
+            </select>
+          </div>
+        </div>
+
+        <hr>
+
+        <h5 class="mb-3 text-secondary">Rincian Barang / Obat</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered" id="itemTable">
+            <thead>
+              <tr>
+                <th>Nama Barang / Obat</th>
+                <th style="width: 15%;">No. Batch</th>
+                <th style="width: 15%;">ED (Kadaluarsa)</th>
+                <th style="width: 10%;">Jumlah</th>
+                <th style="width: 15%;">Harga Satuan (Rp)</th>
+                <th style="width: 15%;">Subtotal (Rp)</th>
+                <th style="width: 5%;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="itemRows">
+              <tr>
+                <td><input type="text" class="form-control namaBarang" required></td>
+                <td><input type="text" class="form-control noBatch" required></td>
+                <td><input type="date" class="form-control ed" required></td>
+                <td><input type="number" class="form-control jumlah" min="1" value="1" oninput="hitungSubtotal(this)" required></td>
+                <td><input type="number" class="form-control harga" min="0" value="0" oninput="hitungSubtotal(this)" required></td>
+                <td><input type="number" class="form-control subtotal" value="0" readonly></td>
+                <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">✕</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button type="button" class="btn btn-outline-primary mb-4" onclick="tambahBaris()">+ Tambah Barang</button>
+
+        <div class="row justify-content-end mb-4">
+          <div class="col-md-4">
+            <div class="card bg-light p-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="h6 mb-0">Total Bayar:</span>
+                <span class="h5 mb-0 text-primary" id="displayTotal">Rp 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">Simpan Transaksi Faktur</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fungsi Menambah Baris Barang Baru
+  function tambahBaris() {
+    var tbody = document.getElementById('itemRows');
+    var tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="form-control namaBarang" required></td>
+      <td><input type="text" class="form-control noBatch" required></td>
+      <td><input type="date" class="form-control ed" required></td>
+      <td><input type="number" class="form-control jumlah" min="1" value="1" oninput="hitungSubtotal(this)" required></td>
+      <td><input type="number" class="form-control harga" min="0" value="0" oninput="hitungSubtotal(this)" required></td>
+      <td><input type="number" class="form-control subtotal" value="0" readonly></td>
+      <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Fungsi Hapus Baris
+  function hapusBaris(btn) {
+    var row = btn.parentNode.parentNode;
+    if (document.querySelectorAll('#itemRows tr').length > 1) {
+      row.parentNode.removeChild(row);
+      hitungTotalAll();
+    } else {
+      alert("Minimal harus ada 1 barang.");
+    }
+  }
+
+  // Fungsi Hitung Subtotal per Baris
+  function hitungSubtotal(element) {
+    var row = element.parentNode.parentNode;
+    var qty = parseFloat(row.querySelector('.jumlah').value) || 0;
+    var harga = parseFloat(row.querySelector('.harga').value) || 0;
+    var subtotal = qty * harga;
+    row.querySelector('.subtotal').value = subtotal;
+    hitungTotalAll();
+  }
+
+  // Fungsi Hitung Total Keseluruhan
+  function hitungTotalAll() {
+    var subtotals = document.querySelectorAll('.subtotal');
+    var total = 0;
+    subtotals.forEach(function(input) {
+      total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('displayTotal').innerText = 'Rp ' + total.toLocaleString('id-ID');
+  }
+
+  // Submit Form Handling
+  document.getElementById('fakturForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    var btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerText = 'Menyimpan...';
+
+    // Mengumpulkan Data Item
+    var items = [];
+    var rows = document.querySelectorAll('#itemRows tr');
+    var totalBayar = 0;
+
+    rows.forEach(function(row) {
+      var sub = parseFloat(row.querySelector('.subtotal').value) || 0;
+      totalBayar += sub;
+      items.push({
+        namaBarang: row.querySelector('.namaBarang').value,
+        noBatch: row.querySelector('.noBatch').value,
+        ed: row.querySelector('.ed').value,
+        jumlah: row.querySelector('.jumlah').value,
+        harga: row.querySelector('.harga').value,
+        subtotal: sub
+      });
+    });
+
+    var dataPayload = {
+      tanggal: document.getElementById('tanggal').value,
+      noFaktur: document.getElementById('noFaktur').value,
+      supplier: document.getElementById('supplier').value,
+      kategori: document.getElementById('kategori').value,
+      totalBayar: totalBayar,
+      items: items
+    };
+
+    // Panggil fungsi Apps Script
+    google.script.run
+      .withSuccessHandler(function(response) {
+        alert(response.message);
+        document.getElementById('fakturForm').reset();
+        document.getElementById('displayTotal').innerText = 'Rp 0';
+        btn.disabled = false;
+        btn.innerText = 'Simpan Transaksi Faktur';
+      })
+      .withFailureHandler(function(err) {
+        alert('Gagal menyimpan: ' + err);
+        btn.disabled = false;
+        btn.innerText = 'Simpan Transaksi Faktur';
+      })
+      .simpanDataFaktur(dataPayload);
+  });
+</script>
+
+</body>
+</html>
