@@ -1,200 +1,712 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <base target="_top">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aplikasi BA Serah Terima Barang</title>
   <style>
-    body { background-color: #f4f6f9; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
-    .card-header { background-color: #0d6efd; color: white; border-radius: 12px 12px 0 0 !important; font-weight: bold; }
-    .btn-primary { background-color: #0d6efd; border: none; }
-    .table th { background-color: #eef2f7; }
+    :root {
+      --primary-color: #1e7e34;
+      --secondary-color: #28a745;
+      --bg-color: #1b5e20;
+      --card-bg: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      background-image: linear-gradient(160deg, #1b5e20 0%, #2e7d32 60%, #388e3c 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      padding: 30px 40px;
+      border-top: 6px solid var(--primary-color);
+    }
+
+    h2 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 25px;
+      font-size: 22px;
+      text-transform: uppercase;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 2px solid var(--secondary-color);
+      width: 100%;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 15px;
+      background: #c8e6c9;
+      border: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      font-weight: bold;
+      color: #1b5e20;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+      width: 100%;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      width: 100%;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .form-group.full-width { grid-column: span 2; }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    input[readonly] { background-color: #f4f6f4; color: #555; }
+
+    .select-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-refresh {
+      padding: 0 12px;
+      background-color: #17a2b8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+      margin-top: 20px;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn:hover:not(:disabled) { background-color: #145a23; }
+
+    .btn-action {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      color: white;
+      margin: 2px;
+    }
+
+    .btn-doc { background-color: #28a745; }
+    .btn-print { background-color: #007bff; }
+
+    .filter-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+      background: #f1f8e9;
+      padding: 18px;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #dcdcdc;
+      padding: 10px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    th { background-color: var(--primary-color); color: white; text-align: center; }
+
+    .status-msg {
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+      min-height: 18px;
+    }
+    .status-msg.error { color: #c62828; }
+    .status-msg.ok { color: #1e7e34; }
+
+    #printModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .modal-body {
+      background: white;
+      padding: 20px;
+      width: 80%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 700px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full-width { grid-column: span 1; }
+      .filter-container { grid-template-columns: 1fr; }
+      .container { padding: 20px; }
+      body { padding: 10px; }
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printContainer, #printContainer * { visibility: visible; }
+      #printContainer {
+        position: absolute;
+        left: 0; top: 0; width: 215mm;
+        padding: 15mm;
+      }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body>
 
-<div class="container max-width-lg">
-  <div class="card">
-    <div class="card-header text-center">
-      <h4 class="mb-0">Form Input Faktur Pembelian Obat & BMHP</h4>
+  <div class="container no-print">
+    <h2>Aplikasi Berita Acara (BA) Serah Terima Barang</h2>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('formTab', event)">Form Input BA</button>
+      <button class="tab-btn" onclick="switchTab('distributorTab', event)">Input Master Distributor</button>
+      <button class="tab-btn" onclick="switchTab('dashboardTab', event)">Dashboard Rekapan</button>
     </div>
-    <div class="card-body">
-      <form id="fakturForm">
-        
-        <div class="row g-3 mb-4">
-          <div class="col-md-3">
-            <label class="form-label font-weight-bold">Tanggal Faktur</label>
-            <input type="date" id="tanggal" class="form-control" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">No. Faktur</label>
-            <input type="text" id="noFaktur" class="form-control" placeholder="Contoh: FKT-2025-001" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Nama Supplier</label>
-            <input type="text" id="supplier" class="form-control" placeholder="PT. Kimia Farma" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Kategori</label>
-            <select id="kategori" class="form-select" required>
-              <option value="OBAT">OBAT</option>
-              <option value="BMHP">BMHP</option>
-            </select>
-          </div>
-        </div>
 
-        <hr>
-
-        <h5 class="mb-3 text-secondary">Rincian Barang / Obat</h5>
-        <div class="table-responsive">
-          <table class="table table-bordered" id="itemTable">
-            <thead>
-              <tr>
-                <th>Nama Barang / Obat</th>
-                <th style="width: 15%;">No. Batch</th>
-                <th style="width: 15%;">ED (Kadaluarsa)</th>
-                <th style="width: 10%;">Jumlah</th>
-                <th style="width: 15%;">Harga Satuan (Rp)</th>
-                <th style="width: 15%;">Subtotal (Rp)</th>
-                <th style="width: 5%;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="itemRows">
-              <tr>
-                <td><input type="text" class="form-control namaBarang" required></td>
-                <td><input type="text" class="form-control noBatch" required></td>
-                <td><input type="date" class="form-control ed" required></td>
-                <td><input type="number" class="form-control jumlah" min="1" value="1" oninput="hitungSubtotal(this)" required></td>
-                <td><input type="number" class="form-control harga" min="0" value="0" oninput="hitungSubtotal(this)" required></td>
-                <td><input type="number" class="form-control subtotal" value="0" readonly></td>
-                <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">✕</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <button type="button" class="btn btn-outline-primary mb-4" onclick="tambahBaris()">+ Tambah Barang</button>
-
-        <div class="row justify-content-end mb-4">
-          <div class="col-md-4">
-            <div class="card bg-light p-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="h6 mb-0">Total Bayar:</span>
-                <span class="h5 mb-0 text-primary" id="displayTotal">Rp 0</span>
-              </div>
+    <div id="formTab" class="tab-content active">
+      <form id="baForm" onsubmit="handleFormSubmit(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Distributor</label>
+            <div class="select-wrapper">
+              <select id="distributor" name="distributor" required onchange="onDistributorChange()">
+                <option value="">-- Memuat Data... --</option>
+              </select>
+              <button type="button" class="btn-refresh" onclick="loadDistributors()" title="Refresh distributor">↻ Refresh</button>
             </div>
           </div>
+          <div class="form-group">
+            <label>Alamat</label>
+            <input type="text" id="alamat" name="alamat" readonly placeholder="-">
+          </div>
+          <div class="form-group">
+            <label>No. Kontrak</label>
+            <input type="text" id="noKontrak" name="noKontrak" readonly placeholder="-">
+          </div>
+          <div class="form-group">
+            <label>Tgl. Kontrak</label>
+            <input type="text" id="tglKontrak" name="tglKontrak" readonly placeholder="-">
+          </div>
+          <div class="form-group">
+            <label>Nomor Faktur</label>
+            <input type="text" id="noFaktur" name="noFaktur" required placeholder="Masukkan Nomor Faktur">
+          </div>
+          <div class="form-group">
+            <label>Tanggal Faktur</label>
+            <input type="date" id="tglFaktur" name="tglFaktur" required onchange="autoFillDateText()">
+          </div>
+          <div class="form-group">
+            <label>Hari (Otomatis)</label>
+            <input type="text" id="hari" name="hari" readonly placeholder="-">
+          </div>
+          <div class="form-group">
+            <label>Tanggal (Otomatis)</label>
+            <input type="text" id="tanggal" name="tanggal" readonly placeholder="-">
+          </div>
+          <div class="form-group">
+            <label>Bulan (Otomatis)</label>
+            <input type="text" id="bulan" name="bulan" readonly placeholder="-">
+          </div>
+          <div class="form-group">
+            <label>Tahun (Otomatis)</label>
+            <input type="text" id="tahun" name="tahun" readonly placeholder="-">
+          </div>
+          <div class="form-group full-width">
+            <label>Keterangan</label>
+            <textarea id="keterangan" name="keterangan" rows="3" placeholder="Keterangan opsional..."></textarea>
+          </div>
         </div>
-
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">Simpan Transaksi Faktur</button>
-        </div>
-
+        <button type="submit" class="btn" id="btnSubmitBA">Simpan Data BA</button>
+        <div class="status-msg" id="statusBA"></div>
       </form>
     </div>
+
+    <div id="distributorTab" class="tab-content">
+      <form id="distributorForm" onsubmit="handleDistributorSubmit(event)">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nama Distributor / Penyedia</label>
+            <input type="text" id="namaDistributor" name="namaDistributor" required placeholder="Contoh: PT. Bintang Medika">
+          </div>
+          <div class="form-group full-width">
+            <label>Alamat Distributor</label>
+            <input type="text" id="alamatDistributor" name="alamatDistributor" required placeholder="Contoh: Jl. Ahmad Yani No. 45, Samarinda">
+          </div>
+          <div class="form-group">
+            <label>Nomor Kontrak</label>
+            <input type="text" id="noKontrakDistributor" name="noKontrakDistributor" required placeholder="Contoh: 001/KONTRAK/2025">
+          </div>
+          <div class="form-group">
+            <label>Tahun Kontrak / Tgl Kontrak</label>
+            <input type="text" id="tahunKontrakDistributor" name="tahunKontrakDistributor" required placeholder="Contoh: 2 Januari 2025">
+          </div>
+        </div>
+        <button type="submit" class="btn" id="btnSubmitDistributor">Simpan Master Distributor</button>
+        <div class="status-msg" id="statusDistributor"></div>
+      </form>
+    </div>
+
+    <div id="dashboardTab" class="tab-content">
+      <div class="filter-container">
+        <div class="form-group">
+          <label>Filter Bulan</label>
+          <select id="filterBulan" onchange="loadDashboard()">
+            <option value="">Semua Bulan</option>
+            <option value="Januari">Januari</option>
+            <option value="Februari">Februari</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
+            <option value="Juni">Juni</option>
+            <option value="Juli">Juli</option>
+            <option value="Agustus">Agustus</option>
+            <option value="September">September</option>
+            <option value="Oktober">Oktober</option>
+            <option value="November">November</option>
+            <option value="Desember">Desember</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Filter Tahun</label>
+          <input type="number" id="filterTahun" placeholder="Contoh: 2025" oninput="loadDashboard()">
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 5%;">No</th>
+            <th style="width: 20%;">Hari / Tgl</th>
+            <th style="width: 15%;">No. Faktur</th>
+            <th style="width: 25%;">Distributor</th>
+            <th style="width: 15%;">No. Kontrak</th>
+            <th style="width: 20%;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="dashBody">
+          <tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
 
-<script>
-  // Fungsi Menambah Baris Barang Baru
-  function tambahBaris() {
-    var tbody = document.getElementById('itemRows');
-    var tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" class="form-control namaBarang" required></td>
-      <td><input type="text" class="form-control noBatch" required></td>
-      <td><input type="date" class="form-control ed" required></td>
-      <td><input type="number" class="form-control jumlah" min="1" value="1" oninput="hitungSubtotal(this)" required></td>
-      <td><input type="number" class="form-control harga" min="0" value="0" oninput="hitungSubtotal(this)" required></td>
-      <td><input type="number" class="form-control subtotal" value="0" readonly></td>
-      <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">✕</button></td>
-    `;
-    tbody.appendChild(tr);
-  }
+  <div id="printModal">
+    <div class="modal-body">
+      <div id="printContainer"></div>
+      <br>
+      <button class="btn btn-print no-print" onclick="window.print()">Print Sekarang</button>
+      <button class="btn no-print" style="background:#6c757d;" onclick="closeModal()">Tutup</button>
+    </div>
+  </div>
 
-  // Fungsi Hapus Baris
-  function hapusBaris(btn) {
-    var row = btn.parentNode.parentNode;
-    if (document.querySelectorAll('#itemRows tr').length > 1) {
-      row.parentNode.removeChild(row);
-      hitungTotalAll();
-    } else {
-      alert("Minimal harus ada 1 barang.");
-    }
-  }
+  <script>
+    // ============================================================
+    // GANTI dengan URL Web App (deploy) Apps Script kamu jika berubah.
+    // ============================================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzzpjnWC5sqDDDziPugcYlqHoYfmy0jk6sOJSdOstxwQegOI9K6SupbAVfV6SvaevntzQ/exec';
 
-  // Fungsi Hitung Subtotal per Baris
-  function hitungSubtotal(element) {
-    var row = element.parentNode.parentNode;
-    var qty = parseFloat(row.querySelector('.jumlah').value) || 0;
-    var harga = parseFloat(row.querySelector('.harga').value) || 0;
-    var subtotal = qty * harga;
-    row.querySelector('.subtotal').value = subtotal;
-    hitungTotalAll();
-  }
+    let distributorList = [];
+    let dashboardData = [];
 
-  // Fungsi Hitung Total Keseluruhan
-  function hitungTotalAll() {
-    var subtotals = document.querySelectorAll('.subtotal');
-    var total = 0;
-    subtotals.forEach(function(input) {
-      total += parseFloat(input.value) || 0;
-    });
-    document.getElementById('displayTotal').innerText = 'Rp ' + total.toLocaleString('id-ID');
-  }
-
-  // Submit Form Handling
-  document.getElementById('fakturForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    var btn = document.getElementById('btnSubmit');
-    btn.disabled = true;
-    btn.innerText = 'Menyimpan...';
-
-    // Mengumpulkan Data Item
-    var items = [];
-    var rows = document.querySelectorAll('#itemRows tr');
-    var totalBayar = 0;
-
-    rows.forEach(function(row) {
-      var sub = parseFloat(row.querySelector('.subtotal').value) || 0;
-      totalBayar += sub;
-      items.push({
-        namaBarang: row.querySelector('.namaBarang').value,
-        noBatch: row.querySelector('.noBatch').value,
-        ed: row.querySelector('.ed').value,
-        jumlah: row.querySelector('.jumlah').value,
-        harga: row.querySelector('.harga').value,
-        subtotal: sub
-      });
-    });
-
-    var dataPayload = {
-      tanggal: document.getElementById('tanggal').value,
-      noFaktur: document.getElementById('noFaktur').value,
-      supplier: document.getElementById('supplier').value,
-      kategori: document.getElementById('kategori').value,
-      totalBayar: totalBayar,
-      items: items
+    window.onload = function () {
+      loadDistributors();
+      loadDashboard();
     };
 
-    // Panggil fungsi Apps Script
-    google.script.run
-      .withSuccessHandler(function(response) {
-        alert(response.message);
-        document.getElementById('fakturForm').reset();
-        document.getElementById('displayTotal').innerText = 'Rp 0';
-        btn.disabled = false;
-        btn.innerText = 'Simpan Transaksi Faktur';
-      })
-      .withFailureHandler(function(err) {
-        alert('Gagal menyimpan: ' + err);
-        btn.disabled = false;
-        btn.innerText = 'Simpan Transaksi Faktur';
-      })
-      .simpanDataFaktur(dataPayload);
-  });
-</script>
+    // ---------- Helper: panggil API GET ----------
+    async function apiGet(action, params) {
+      let url = API_URL + '?action=' + encodeURIComponent(action);
+      if (params) {
+        Object.keys(params).forEach(k => {
+          if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
+            url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+          }
+        });
+      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
 
+    // ---------- Helper: panggil API POST ----------
+    // Menggunakan Content-Type text/plain agar browser tidak mengirim
+    // preflight OPTIONS (yang tidak didukung baik oleh Apps Script Web App).
+    async function apiPost(action, data) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: action, data: data })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    async function loadDistributors() {
+      const select = document.getElementById('distributor');
+      select.innerHTML = '<option value="">-- Memuat Data... --</option>';
+      try {
+        const res = await apiGet('getDistributors');
+        if (res.status === 'success') {
+          populateDistributor(res.data);
+        } else {
+          throw new Error(res.message);
+        }
+      } catch (err) {
+        select.innerHTML = '<option value="">-- Gagal memuat, klik Refresh --</option>';
+        console.error('Gagal memuat distributor:', err);
+      }
+    }
+
+    function populateDistributor(data) {
+      distributorList = data || [];
+      let select = document.getElementById('distributor');
+      select.innerHTML = '<option value="">-- Pilih Distributor --</option>';
+
+      if (distributorList.length === 0) {
+        let opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '(Belum ada data distributor)';
+        select.appendChild(opt);
+        return;
+      }
+
+      distributorList.forEach(row => {
+        if (row && row[0]) {
+          let opt = document.createElement('option');
+          opt.value = row[0];
+          opt.textContent = row[0];
+          select.appendChild(opt);
+        }
+      });
+    }
+
+    function switchTab(tabId, event) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      if (event) event.currentTarget.classList.add('active');
+
+      if (tabId === 'dashboardTab') loadDashboard();
+    }
+
+    function onDistributorChange() {
+      let selected = document.getElementById('distributor').value;
+      let item = distributorList.find(r => r[0] === selected);
+      if (item) {
+        document.getElementById('alamat').value = item[1] || '';
+        document.getElementById('noKontrak').value = item[2] || '';
+        document.getElementById('tglKontrak').value = item[3] || '';
+      } else {
+        document.getElementById('alamat').value = '';
+        document.getElementById('noKontrak').value = '';
+        document.getElementById('tglKontrak').value = '';
+      }
+    }
+
+    function autoFillDateText() {
+      let val = document.getElementById('tglFaktur').value;
+      if (!val) return;
+      let d = new Date(val);
+      let hariArr = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      let bulanArr = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+      document.getElementById('hari').value = hariArr[d.getUTCDay()];
+      document.getElementById('tanggal').value = d.getUTCDate();
+      document.getElementById('bulan').value = bulanArr[d.getUTCMonth()];
+      document.getElementById('tahun').value = d.getUTCFullYear();
+    }
+
+    async function handleDistributorSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitDistributor');
+      const status = document.getElementById('statusDistributor');
+      btn.disabled = true;
+      status.textContent = 'Menyimpan...';
+      status.className = 'status-msg';
+
+      const data = {
+        namaDistributor: document.getElementById('namaDistributor').value,
+        alamatDistributor: document.getElementById('alamatDistributor').value,
+        noKontrakDistributor: document.getElementById('noKontrakDistributor').value,
+        tahunKontrakDistributor: document.getElementById('tahunKontrakDistributor').value
+      };
+
+      try {
+        const res = await apiPost('saveDistributor', data);
+        if (res.status === 'success') {
+          status.textContent = res.message;
+          status.className = 'status-msg ok';
+          document.getElementById('distributorForm').reset();
+          populateDistributor(res.distributors);
+          switchTab('formTab');
+        } else {
+          status.textContent = 'Gagal: ' + res.message;
+          status.className = 'status-msg error';
+        }
+      } catch (err) {
+        status.textContent = 'Error: ' + err.message;
+        status.className = 'status-msg error';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitBA');
+      const status = document.getElementById('statusBA');
+      const form = document.getElementById('baForm');
+      btn.disabled = true;
+      status.textContent = 'Menyimpan...';
+      status.className = 'status-msg';
+
+      const data = {
+        distributor: form.distributor.value,
+        alamat: form.alamat.value,
+        noKontrak: form.noKontrak.value,
+        tglKontrak: form.tglKontrak.value,
+        noFaktur: form.noFaktur.value,
+        tglFaktur: form.tglFaktur.value,
+        keterangan: form.keterangan.value
+      };
+
+      try {
+        const res = await apiPost('saveData', data);
+        if (res.status === 'success') {
+          status.textContent = res.message;
+          status.className = 'status-msg ok';
+          form.reset();
+          document.getElementById('alamat').value = '';
+          document.getElementById('noKontrak').value = '';
+          document.getElementById('tglKontrak').value = '';
+        } else {
+          status.textContent = 'Gagal: ' + res.message;
+          status.className = 'status-msg error';
+        }
+      } catch (err) {
+        status.textContent = 'Error: ' + err.message;
+        status.className = 'status-msg error';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function loadDashboard() {
+      const tbody = document.getElementById('dashBody');
+      let bln = document.getElementById('filterBulan').value;
+      let thn = document.getElementById('filterTahun').value;
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Memuat data...</td></tr>';
+      try {
+        const res = await apiGet('getDashboard', { bulan: bln, tahun: thn });
+        if (res.status === 'success') {
+          renderDashboard(res.data);
+        } else {
+          throw new Error(res.message);
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Gagal memuat data: ' + escapeHtml(err.message) + '</td></tr>';
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : str;
+      return div.innerHTML;
+    }
+
+    function renderDashboard(data) {
+      dashboardData = data || [];
+      let tbody = document.getElementById('dashBody');
+      tbody.innerHTML = '';
+
+      if (dashboardData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>';
+        return;
+      }
+
+      dashboardData.forEach((row, idx) => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align:center;">${escapeHtml(row[0])}</td>
+          <td>${escapeHtml(row[1])}, ${escapeHtml(row[2])} ${escapeHtml(row[3])} ${escapeHtml(row[4])}</td>
+          <td>${escapeHtml(row[5])}</td>
+          <td><b>${escapeHtml(row[7])}</b><br><small>${escapeHtml(row[8])}</small></td>
+          <td>${escapeHtml(row[9])}</td>
+          <td style="text-align:center;">
+            <button class="btn-action btn-doc" data-idx="${idx}" data-mode="word">Word</button>
+            <button class="btn-action btn-print" data-idx="${idx}" data-mode="print">Print</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Event delegation: aman terhadap tanda kutip/karakter khusus pada nama distributor
+      tbody.querySelectorAll('button[data-idx]').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const row = dashboardData[this.getAttribute('data-idx')];
+          if (this.getAttribute('data-mode') === 'word') {
+            cetakWord(row);
+          } else {
+            cetakDirectPrint(row);
+          }
+        });
+      });
+    }
+
+    function generateHTMLTemplate(row) {
+      const no = row[0], hari = row[1], tgl = row[2], bln = row[3], thn = row[4];
+      const noFaktur = row[5], dist = row[7], noKontrak = row[9];
+      return `
+        <div style="font-family: Arial, sans-serif; font-size: 11pt; text-align: justify; line-height: 1.4;">
+          <div style="text-align: center; font-weight: bold; font-size: 12pt;">BERITA ACARA PEMERIKSAAN</div>
+          <div style="text-align: center; margin-bottom: 20px;">Nomor : B- ${escapeHtml(no)} /RSAMP/UM/900.1.7.2/01/2025</div>
+
+          <p style="text-indent: 30px;">
+            Pada hari ini <b>${escapeHtml(hari)}</b> tanggal <b>${escapeHtml(tgl)}</b> bulan <b>${escapeHtml(bln)}</b> tahun <b>${escapeHtml(thn)}</b>, PPK Kegiatan BLUD Pembelian Obat dan BHP RSUD. AM. Parikesit Tahun 2023 (Surat Keputusan Pengguna Anggaran/Pengguna Barang Nomor : B-9906/DINKES/SKRT-UTL/900.1.15/2024 tanggal 3 Desember 2024. Telah menerima barang dengan Nomor : <b>${escapeHtml(noFaktur)}</b> tanggal <b>${escapeHtml(tgl)} ${escapeHtml(bln)} ${escapeHtml(thn)}</b> yang telah diserahkan oleh <b>${escapeHtml(dist)}</b>, Sesuai dengan Surat Perjanjian/Kontrak Nomor : <b>${escapeHtml(noKontrak)}</b> tanggal 2 Januari 2025.
+          </p>
+
+          <p style="text-indent: 30px;">
+            Adapun semua barang/Pekerjaan dalam kondisi baik dan sesuai dengan pesanan, selanjutnya diserahkan kepada Penyimpan Barang RSUD. AM. Parikesit Tenggarong Seberang, dan pada hari yang sama dikeluarkan dari Penyimpan Barang ke Instalasi Farmasi untuk disimpan dan didistribusikan oleh Gudang Instalasi Farmasi.
+          </p>
+
+          <p style="text-indent: 30px;">
+            Demikian Berita Acara Pemeriksaan dan Serah Terima Hasil Pekerjaan ini dibuat dengan sebenarnya dan digunakan seperlunya bagi yang bersangkutan.
+          </p>
+
+          <table style="width: 100%; margin-top: 30px; font-size: 10pt; text-align: center;">
+            <tr>
+              <td width="50%">Penyedia Barang,<br><b>${escapeHtml(dist)}</b><br><br><br><br><br><u>( ............................... )</u></td>
+              <td width="50%">Pejabat Pembuat Komitmen<br><br><br><br><br><u><b>Hj. Dewi Dina Yuniarti, S. Si,Apt</b></u><br>NIP. 19720628 199803 2 007</td>
+            </tr>
+            <tr><td colspan="2" style="height: 20px;"></td></tr>
+            <tr>
+              <td>Kepala Instalasi Farmasi,<br><br><br><br><br><u><b>Helen Tapilouw, S. Si. Apt</b></u><br>NIP. 19750720 200502 2 003</td>
+              <td>Pengurus Barang Pengguna,<br><br><br><br><br><u><b>Ali Rahman, SE</b></u><br>NIP. 19760830 200701 1 011</td>
+            </tr>
+          </table>
+        </div>
+      `;
+    }
+
+    function cetakDirectPrint(row) {
+      let html = generateHTMLTemplate(row);
+      document.getElementById('printContainer').innerHTML = html;
+      document.getElementById('printModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('printModal').style.display = 'none';
+    }
+
+    function cetakWord(row) {
+      let bodyHtml = generateHTMLTemplate(row);
+      let content = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <style>
+            @page Section1 { size: 21.5cm 33.0cm; margin: 1.5cm 2.0cm 2.0cm 2.0cm; }
+            div.Section1 { page: Section1; }
+          </style>
+        </head>
+        <body><div class="Section1">${bodyHtml}</div></body>
+        </html>
+      `;
+      let converted = new Blob(['\ufeff' + content], { type: 'application/msword' });
+      let url = URL.createObjectURL(converted);
+      let a = document.createElement('a');
+      a.href = url;
+      a.download = `BA_${row[7]}_${row[5]}.doc`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
 </body>
 </html>
