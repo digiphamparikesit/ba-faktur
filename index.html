@@ -202,7 +202,7 @@
 
     .filter-container {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 2fr 1fr 1fr;
       gap: 15px;
       margin-bottom: 20px;
       background: #f1f8e9;
@@ -392,6 +392,10 @@
     <div id="dashboardTab" class="tab-content">
       <div class="filter-container">
         <div class="form-group">
+          <label>Cari Distributor</label>
+          <input type="text" id="searchDistributor" placeholder="Ketik nama distributor..." oninput="applySearchFilter()">
+        </div>
+        <div class="form-group">
           <label>Filter Bulan</label>
           <select id="filterBulan" onchange="loadDashboard()">
             <option value="">Semua Bulan</option>
@@ -476,6 +480,7 @@
 
     let distributorList = [];
     let dashboardData = [];
+    let dashboardRawData = [];
 
     window.onload = function () {
       loadDistributors();
@@ -669,13 +674,25 @@
       try {
         const res = await apiGet('getDashboard', { bulan: bln, tahun: thn });
         if (res.status === 'success') {
-          renderDashboard(res.data);
+          dashboardRawData = res.data || [];
+          applySearchFilter();
         } else {
           throw new Error(res.message);
         }
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Gagal memuat data: ' + escapeHtml(err.message) + '</td></tr>';
       }
+    }
+
+    // Filter dataset yang sudah ada (hasil fetch bulan/tahun) berdasarkan nama
+    // distributor, tanpa perlu memanggil server lagi -> pencarian terasa instan.
+    function applySearchFilter() {
+      const cari = document.getElementById('searchDistributor').value.trim().toLowerCase();
+      let data = dashboardRawData;
+      if (cari) {
+        data = data.filter(row => (row[7] || '').toString().toLowerCase().includes(cari));
+      }
+      renderDashboard(data);
     }
 
     function escapeHtml(str) {
@@ -737,7 +754,7 @@
         <div style="font-family: Arial, sans-serif; font-size: 11pt; text-align: justify; line-height: 1.4;">
           ${KOP_HTML}
           <div style="text-align: center; font-weight: bold; font-size: 12pt;">BERITA ACARA PEMERIKSAAN</div>
-          <div style="text-align: center; margin-bottom: 20px;">Nomor : <b>B-</b> ${escapeHtml(no)}<b>/RSAMP/UM/900.1.7.2/${blnAngka}/2026</b></div>
+          <div style="text-align: center; margin-bottom: 20px;">Nomor : <b>B-</b> ${escapeHtml(no)}<b>/RSAMP/UM/900.1.7.2/${blnAngka}/2025</b></div>
 
           <p style="text-indent: 30px;">
             Pada hari ini <b>${escapeHtml(hari)}</b> tanggal <b>${escapeHtml(tgl)}</b> bulan <b>${escapeHtml(bln)}</b> tahun <b>${escapeHtml(thn)}</b>, PPK Kegiatan BLUD Pembelian Obat dan BHP RSUD. AM. Parikesit Tahun 2023 (Surat Keputusan Pengguna Anggaran/Pengguna Barang Nomor : <b>B-9906/DINKES/SKRT-UTL/900.1.15/2024</b> tanggal <b>3 Desember 2024.</b> Telah menerima barang dengan Nomor : <b>${escapeHtml(noFaktur)}</b> tanggal <b>${escapeHtml(tgl)} ${escapeHtml(bln)} ${escapeHtml(thn)}</b> yang telah diserahkan oleh <b>${escapeHtml(dist)}</b> ${escapeHtml(alamat)}, Sesuai dengan Surat Perjanjian/Kontrak Nomor : <b>${escapeHtml(noKontrak)}</b> tanggal <b>${escapeHtml(tglKontrak)}</b>.
