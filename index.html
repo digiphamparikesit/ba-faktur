@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aplikasi BA Serah Terima Barang</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --primary-color: #1e7e34;
@@ -461,7 +462,7 @@
             <div style="font-size:13pt;">PEMERINTAH KABUPATEN KUTAI KARTANEGARA</div>
             <div style="font-weight:bold; font-size:15pt;">DINAS KESEHATAN</div>
             <div style="font-weight:bold; font-size:13pt;">UNIT ORGANISASI BERSIFAT KHUSUS</div>
-            <div style="font-weight:bold; font-size:15pt;">RUMAH SAKIT UMUM DAERAH AJI MUHAMMAD PARIKESIT</div>
+            <div style="font-weight:bold; font-size:12pt; white-space:nowrap; letter-spacing:-0.2px;">RUMAH SAKIT UMUM DAERAH AJI MUHAMMAD PARIKESIT</div>
             <div style="font-size:9pt;">Jalan Ratu Agung Nomor 1&nbsp;&nbsp;Tenggarong Seberang&nbsp;&nbsp;Telepon (0541) 661015&nbsp;&nbsp;Kode Pos 75572</div>
             <div style="font-size:9pt;">Laman : <span style="color:#0563C1; text-decoration:underline;">www.rsamp.kukarkab.go.id</span>&nbsp;&nbsp;Pos-el : <span style="color:#0563C1; text-decoration:underline;">rsudamparikesit@yahoo.com</span></div>
           </td>
@@ -702,7 +703,7 @@
           <td><b>${escapeHtml(row[7])}</b><br><small>${escapeHtml(row[8])}</small></td>
           <td>${escapeHtml(row[9])}</td>
           <td style="text-align:center;">
-            <button class="btn-action btn-doc" data-idx="${idx}" data-mode="word">Word</button>
+            <button class="btn-action btn-doc" data-idx="${idx}" data-mode="pdf">PDF</button>
             <button class="btn-action btn-print" data-idx="${idx}" data-mode="print">Print</button>
           </td>
         `;
@@ -713,8 +714,8 @@
       tbody.querySelectorAll('button[data-idx]').forEach(btn => {
         btn.addEventListener('click', function () {
           const row = dashboardData[this.getAttribute('data-idx')];
-          if (this.getAttribute('data-mode') === 'word') {
-            cetakWord(row);
+          if (this.getAttribute('data-mode') === 'pdf') {
+            cetakPDF(row, this);
           } else {
             cetakDirectPrint(row);
           }
@@ -785,27 +786,40 @@
       document.getElementById('printModal').style.display = 'none';
     }
 
-    function cetakWord(row) {
+    function cetakPDF(row, btnEl) {
       let bodyHtml = generateHTMLTemplate(row);
-      let content = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head>
-          <meta charset='utf-8'>
-          <style>
-            @page Section1 { size: 21.5cm 33.0cm; margin: 1.5cm 2.0cm 2.0cm 2.0cm; mso-page-orientation: portrait; }
-            div.Section1 { page: Section1; }
-          </style>
-        </head>
-        <body><div class="Section1">${bodyHtml}</div></body>
-        </html>
-      `;
-      let converted = new Blob(['\ufeff' + content], { type: 'application/msword' });
-      let url = URL.createObjectURL(converted);
-      let a = document.createElement('a');
-      a.href = url;
-      a.download = `BA_${row[7]}_${row[5]}.doc`;
-      a.click();
-      URL.revokeObjectURL(url);
+
+      // Buat container tersembunyi berukuran F4 penuh untuk dirender ke PDF
+      let container = document.createElement('div');
+      container.style.width = '215mm';
+      container.style.padding = '15mm 20mm 20mm 20mm';
+      container.style.boxSizing = 'border-box';
+      container.style.background = '#ffffff';
+      container.style.position = 'fixed';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.innerHTML = bodyHtml;
+      document.body.appendChild(container);
+
+      let originalText = btnEl ? btnEl.textContent : '';
+      if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Memproses...'; }
+
+      let opt = {
+        margin: 0,
+        filename: `BA_${row[7]}_${row[5]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: [215, 330], orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(container).save().then(() => {
+        document.body.removeChild(container);
+        if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalText; }
+      }).catch((err) => {
+        document.body.removeChild(container);
+        if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalText; }
+        alert('Gagal membuat PDF: ' + err.message);
+      });
     }
   </script>
 </body>
