@@ -722,14 +722,21 @@
       });
     }
 
+    function bulanToAngka(namaBulan) {
+      const daftarBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      const idx = daftarBulan.indexOf((namaBulan || '').toString().trim());
+      return idx >= 0 ? String(idx + 1).padStart(2, '0') : '01';
+    }
+
     function generateHTMLTemplate(row) {
       const no = row[0], hari = row[1], tgl = row[2], bln = row[3], thn = row[4];
       const noFaktur = row[5], dist = row[7], alamat = row[8], noKontrak = row[9], tglKontrak = row[10];
+      const blnAngka = bulanToAngka(bln);
       return `
         <div style="font-family: Arial, sans-serif; font-size: 11pt; text-align: justify; line-height: 1.4;">
           ${KOP_HTML}
           <div style="text-align: center; font-weight: bold; font-size: 12pt;">BERITA ACARA PEMERIKSAAN</div>
-          <div style="text-align: center; margin-bottom: 20px;">Nomor : <b>B-</b> ${escapeHtml(no)}<b>/RSAMP/UM/900.1.7.2/01/2025</b></div>
+          <div style="text-align: center; margin-bottom: 20px;">Nomor : <b>B-</b> ${escapeHtml(no)}<b>/RSAMP/UM/900.1.7.2/${blnAngka}/2025</b></div>
 
           <p style="text-indent: 30px;">
             Pada hari ini <b>${escapeHtml(hari)}</b> tanggal <b>${escapeHtml(tgl)}</b> bulan <b>${escapeHtml(bln)}</b> tahun <b>${escapeHtml(thn)}</b>, PPK Kegiatan BLUD Pembelian Obat dan BHP RSUD. AM. Parikesit Tahun 2023 (Surat Keputusan Pengguna Anggaran/Pengguna Barang Nomor : <b>B-9906/DINKES/SKRT-UTL/900.1.15/2024</b> tanggal <b>3 Desember 2024.</b> Telah menerima barang dengan Nomor : <b>${escapeHtml(noFaktur)}</b> tanggal <b>${escapeHtml(tgl)} ${escapeHtml(bln)} ${escapeHtml(thn)}</b> yang telah diserahkan oleh <b>${escapeHtml(dist)}</b> ${escapeHtml(alamat)}, Sesuai dengan Surat Perjanjian/Kontrak Nomor : <b>${escapeHtml(noKontrak)}</b> tanggal <b>${escapeHtml(tglKontrak)}</b>.
